@@ -86,7 +86,7 @@ CREATE OR ALTER PROCEDURE bronze.insertdata AS
 );
     PRINT 'INSERTING STUDENTS CSV'
     BULK INSERT bronze.Students
-	FROM 'D:\EXCEL TUTORIAL\archive\homework.csv'
+	FROM 'D:\EXCEL TUTORIAL\archive\students.csv'
 	WITH (
 		FIELDTERMINATOR = ',',
 		ROWTERMINATOR = '\n',
