@@ -1,0 +1,110 @@
+--- CREATE THE BRONZE LAYER 
+
+CREATE TABLE bronze.Attendance (
+	student_ID NVARCHAR (50),	
+	at_date	NVARCHAR (50),
+	at_subject NVARCHAR (50), 	
+	at_status NVARCHAR (50)
+
+
+);
+GO
+CREATE TABLE bronze.Homework (
+	student_ID NVARCHAR (50),	
+	h_subject NVARCHAR (50),
+	Assignment_Name NVARCHAR (50),
+	due_date	NVARCHAR (50),
+	h_status 	NVARCHAR (50),
+	grade_feedback NVARCHAR (50),
+	guardian_signature NVARCHAR (MAX)
+
+);
+GO
+
+
+CREATE TABLE bronze.Performance (
+	student_ID NVARCHAR (50),	
+	p_subject NVARCHAR (50),
+	exam_score NVARCHAR (50),
+	homework_completion	NVARCHAR (50),
+	teacher_comments NVARCHAR (MAX)
+
+);
+GO
+
+CREATE TABLE bronze.Students (
+	student_ID NVARCHAR (50),	
+	Full_Name NVARCHAR (50),
+	birth_date NVARCHAR (50),
+	Grade_Level	NVARCHAR (50),
+	contact NVARCHAR (50)
+
+);
+GO
+
+CREATE TABLE bronze.Teach_Par_communication (
+	student_ID NVARCHAR (50),	
+	com_date NVARCHAR (50),
+	Message_Type NVARCHAR (50),
+	Message_Content	NVARCHAR (MAX),
+	
+
+);
+GO
+
+
+
+CREATE OR ALTER PROCEDURE bronze.insertdata AS
+  BEGIN
+    DECLARE  @begin_time DATETIME,@end_time DATETIME;
+	SET @begin_time= GETDATE();
+    PRINT 'INSERTING ATTENDANCE CSV'
+	BULK INSERT bronze.Attendance
+	FROM 'D:\EXCEL TUTORIAL\archive\attendance.csv'
+	WITH (
+		FIELDTERMINATOR = ',',
+		ROWTERMINATOR = '\n',
+		FIRSTROW = 2 -- Skip header row (if applicable)
+        );
+
+    PRINT 'INSERTING HOMEWORK CSV'
+	BULK INSERT bronze.Homework
+	FROM 'D:/EXCEL TUTORIAL/archive/homework.csv'
+	WITH (
+		FIELDTERMINATOR = ',',
+		ROWTERMINATOR = '\n',
+		FIRSTROW = 2 -- Skip header row (if applicable)
+	   
+);
+    PRINT 'INSERTING PERFORMANCE CSV'
+    BULK INSERT bronze.Performance
+	FROM 'D:\EXCEL TUTORIAL\archive\performance.csv'
+	WITH (
+		FIELDTERMINATOR = ',',
+		ROWTERMINATOR = '\n',
+		FIRSTROW = 2 -- Skip header row (if applicable)
+);
+    PRINT 'INSERTING STUDENTS CSV'
+    BULK INSERT bronze.Students
+	FROM 'D:\EXCEL TUTORIAL\archive\homework.csv'
+	WITH (
+		FIELDTERMINATOR = ',',
+		ROWTERMINATOR = '\n',
+		FIRSTROW = 2 -- Skip header row (if applicable)
+);
+    PRINT 'INSERTING TEACHER-PARENT COMMUNICATION CSV'
+    BULK INSERT bronze.Teach_Par_communication
+	FROM 'D:\EXCEL TUTORIAL\archive\teacher_parent_communication.csv'
+	WITH (
+		FIELDTERMINATOR = ',',
+		ROWTERMINATOR = '\n',
+		FIRSTROW = 2 -- Skip header row (if applicable)
+   );
+
+   SET @end_time = GETDATE();
+   PRINT 'TOTAL INSERTION TIME IN SECONDS' +CAST(DATEDIFF(SECOND, @end_time, @begin_time) AS NVARCHAR)+' SECONDS';
+ END
+
+ EXEC  bronze.insertdata
+
+

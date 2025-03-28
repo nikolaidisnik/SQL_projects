@@ -1,0 +1,13 @@
+
+---CREATE AND INITIALISE A NEW SQL DATABASE
+
+CREATE DATABASE school_management;
+
+USE school_management;
+GO
+CREATE SCHEMA bronze;
+GO
+CREATE SCHEMA silver;
+GO 
+CREATE SCHEMA gold;
+GO
