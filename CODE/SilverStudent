@@ -1,0 +1,115 @@
+
+IF OBJECT_ID('silver.Students', 'U') IS NOT NULL
+BEGIN
+    DROP TABLE silver.Students
+END
+CREATE TABLE silver.Students(
+    student_ID NVARCHAR (20),	
+	Full_Name NVARCHAR (50),
+	birth_date DATE,
+	Grade_Level	NVARCHAR (10),
+	contact NVARCHAR (50)
+
+)
+
+
+
+
+SELECT TOP (1000) [student_ID]
+      ,[Full_Name]
+      ,[birth_date]
+      ,[Grade_Level]
+      ,[contact]
+ FROM [school_management].[bronze].[Students]
+
+  --CHECK THE QUALITY OF COLUMN student_id
+  ---CHECK IF THERE ARE ANY DUPLICATES
+SELECT student_ID, COUNT(*)
+FROM bronze.Students
+GROUP BY student_ID
+HAVING COUNT(*)>1
+
+  --- CHECK IF THERE ARE ANY NULL VALES OR WRONG id formation
+ SELECT student_ID
+ FROM bronze.Students
+ WHERE len(student_id) >6 OR student_ID IS NULL
+ 
+ ---CHECK IF ID HAS WHITESPACES
+ SELECT COUNT(*)
+ FROM bronze.Students
+ WHERE student_ID != TRIM(student_ID)
+
+
+ --CHECK THE QUALITY OF COLUMN FULL NAME 
+  --- CHECK IF THERE ARE ANY NULL VALES
+ SELECT Full_Name
+ FROM bronze.Students
+ WHERE Full_Name IS NULL
+
+ ---CHECK IF ID HAS WHITESPACES
+ SELECT COUNT(*)
+ FROM bronze.Students
+ WHERE Full_Name != TRIM(Full_Name)
+
+ ---CAPITALISE NAME AND SURNAME FIRST LETTER
+ SELECT UPPER(SUBSTRING(Full_Name, 1, 1)) + LOWER(SUBSTRING(Full_Name, 2, CHARINDEX(' ', Full_Name)-2))
+ + UPPER(SUBSTRING(Full_Name, CHARINDEX(' ', Full_Name),2))+  LOWER(SUBSTRING(Full_Name, CHARINDEX(' ', Full_Name)+2, LEN(Full_Name)))
+ FROM bronze.Students
+ 
+---CHECK IF BIRH DATE COLUMN HAS THE CORRECT FORM
+ SELECT birth_date
+ FROM bronze.Students
+ WHERE birth_date NOT LIKE'__-__-____'
+ OR LEN(birth_date)!=10 
+
+
+
+ ---TRANSFORM DATE TO CORRECT FORM and cast it as date from varchar
+
+SELECT 
+ CASE
+     WHEN  SUBSTRING(birth_date,4,2)>12 THEN  CAST(CONCAT(SUBSTRING(birth_date,7,10),'-',SUBSTRING(birth_date,1,2),'-',SUBSTRING(birth_date,4,2)) AS DATE)
+      ELSE CAST(CONCAT(SUBSTRING(birth_date,7,10),'-',SUBSTRING(birth_date,4,2),'-',SUBSTRING(birth_date,1,2)) AS DATE)
+ END AS n_birthdate
+ FROM bronze.Students
+
+ ---CHECKING GRADE COLUMN FOR INCONSISTENCIES
+ SELECT Grade_Level ,count(*)
+ FROM bronze.Students
+ GROUP BY Grade_Level
+
+  ---CHECKING CONTACT COLUMN FOR INCONSISTENCIES
+ SELECT contact
+ FROM bronze.Students
+ WHERE contact IS NULL
+
+ ---REPLACE NULLS WITH NOT AVAILABLE
+ SELECT COALESCE(contact, 'N/A')
+ FROM bronze.Students
+
+
+ ---INSERTING DATA IN TABLE STUDENTS LOCATED AT SILVER LAYER
+
+INSERT INTO silver.Students(
+       student_ID
+      ,full_name
+      ,birth_date
+      ,grade_level
+      ,contact
+
+)
+
+ SELECT TRIM(student_ID),  
+ UPPER(SUBSTRING(Full_Name, 1, 1)) + LOWER(SUBSTRING(Full_Name, 2, CHARINDEX(' ', Full_Name)-2))
+ + UPPER(SUBSTRING(Full_Name, CHARINDEX(' ', Full_Name),2))+  LOWER(SUBSTRING(Full_Name, CHARINDEX(' ', Full_Name)+2, LEN(Full_Name))),
+ CASE
+     WHEN  SUBSTRING(birth_date,4,2)>12 THEN  CAST(CONCAT(SUBSTRING(birth_date,7,10),'-',SUBSTRING(birth_date,1,2),'-',SUBSTRING(birth_date,4,2)) AS DATE)
+      ELSE CAST(CONCAT(SUBSTRING(birth_date,7,10),'-',SUBSTRING(birth_date,4,2),'-',SUBSTRING(birth_date,1,2)) AS DATE)
+ END AS n_birthdate,
+ Grade_Level,
+ CASE WHEN contact IS NULL THEN 'N/A'
+     ELSE contact
+ END
+FROM bronze.Students
+
+
